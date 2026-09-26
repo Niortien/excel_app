@@ -36,9 +36,9 @@ export function SheetWorkspaceView({ projectId }: { projectId: string }) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
         <div className="flex flex-col gap-2">
           <p className="text-xs text-base-content/50">
-            Cliquez sur un en-tête pour sélectionner une colonne, sur le numéro à gauche pour sélectionner une
-            ligne entière (Maj pour une plage), cliquez-glissez sur des cellules pour les sélectionner, ou
-            double-cliquez sur une cellule pour la modifier.
+            Cliquez sur un en-tête pour sélectionner une colonne (les flèches ‹ › à côté du nom la déplacent), sur
+            le numéro à gauche pour sélectionner une ligne entière (Maj pour une plage), cliquez-glissez sur des
+            cellules pour les sélectionner, ou double-cliquez sur une cellule pour la modifier.
           </p>
           <SheetDataTable columns={data.columns} rows={data.rows} />
         </div>

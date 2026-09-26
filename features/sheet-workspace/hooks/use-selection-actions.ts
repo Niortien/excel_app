@@ -59,13 +59,20 @@ export function useSelectionActions() {
     toast.success('Sélection mise à jour')
   }
 
-  function moveSelectedColumn(direction: 'left' | 'right') {
-    if (!data || selectedColumnIds.length !== 1) return
-    const next = moveColumn(data, selectedColumnIds[0], direction)
+  /** Déplace une colonne précise d'une position, indépendamment de la sélection courante —
+   * utilisé par les flèches directement dans l'en-tête du tableau, toujours visibles. */
+  function moveColumnById(columnId: string, direction: 'left' | 'right') {
+    if (!data) return
+    const next = moveColumn(data, columnId, direction)
     applyOperation(next, {
       label: `Colonne déplacée vers la ${direction === 'left' ? 'gauche' : 'droite'}`,
       excelEquivalent: 'Glisser-déposer un en-tête de colonne Excel',
     })
+  }
+
+  function moveSelectedColumn(direction: 'left' | 'right') {
+    if (selectedColumnIds.length !== 1) return
+    moveColumnById(selectedColumnIds[0], direction)
   }
 
   function insertSummaryColumnAction(fn: SummaryFunction, position: SummaryColumnPosition) {
@@ -102,6 +109,7 @@ export function useSelectionActions() {
     fillSelection,
     deleteSelectedColumns,
     moveSelectedColumn,
+    moveColumnById,
     insertSummaryColumn: insertSummaryColumnAction,
     clearSelection,
   }

@@ -6,7 +6,7 @@
 // navigateur. Composant générique réutilisé par toutes les features qui doivent afficher un
 // tableau de données ou un aperçu de résultat.
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { IconArrowDown, IconArrowUp, IconSelector } from '@tabler/icons-react'
+import { IconArrowDown, IconArrowUp, IconChevronLeft, IconChevronRight, IconSelector } from '@tabler/icons-react'
 import { ColumnTypeBadge } from './ColumnTypeBadge'
 import { formatCellValue } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
@@ -37,6 +37,9 @@ interface SmartTableProps {
   onCellSelectExtend?: (rowIndex: number, columnId: string) => void
   /** Affiche une gouttière de numéros de ligne cliquable pour sélectionner une ligne entière. */
   onRowHeaderSelect?: (rowIndex: number, modifiers: { shiftKey: boolean }) => void
+  /** Affiche deux flèches directement dans l'en-tête pour déplacer une colonne, sans avoir à
+   * la sélectionner au préalable. */
+  onColumnMove?: (columnId: string, direction: 'left' | 'right') => void
   /** Autorise la modification d'une cellule par double-clic. */
   editable?: boolean
   onCellValueChange?: (rowIndex: number, columnId: string, value: string) => void
@@ -57,6 +60,7 @@ export function SmartTable({
   onCellSelectStart,
   onCellSelectExtend,
   onRowHeaderSelect,
+  onColumnMove,
   editable = false,
   onCellValueChange,
 }: SmartTableProps) {
@@ -139,7 +143,7 @@ export function SmartTable({
         <thead>
           <tr>
             {selectable && onRowHeaderSelect && <th scope="col" className="w-8 bg-base-200" aria-label="Sélection de ligne" />}
-            {columns.map((column) => {
+            {columns.map((column, columnIndex) => {
               const isSorted = sort?.columnId === column.id
               const isColumnSelected = selectedColumnIds.includes(column.id)
               return (
@@ -152,27 +156,51 @@ export function SmartTable({
                     isColumnSelected && 'bg-primary/20 outline-2 -outline-offset-2 outline-primary'
                   )}
                 >
-                  <button
-                    type="button"
-                    onClick={(event) => handleHeaderClick(column.id, event)}
-                    disabled={!isSortEnabled && !selectable}
-                    className="flex items-center gap-1.5 text-left font-semibold text-base-content disabled:cursor-default"
-                  >
-                    <span className="flex flex-col gap-1">
-                      {column.label}
-                      <ColumnTypeBadge type={column.dataType} />
-                    </span>
-                    {isSortEnabled &&
-                      (isSorted ? (
-                        sort?.direction === 'asc' ? (
-                          <IconArrowUp size={14} />
+                  <div className="flex items-start gap-1">
+                    <button
+                      type="button"
+                      onClick={(event) => handleHeaderClick(column.id, event)}
+                      disabled={!isSortEnabled && !selectable}
+                      className="flex items-center gap-1.5 text-left font-semibold text-base-content disabled:cursor-default"
+                    >
+                      <span className="flex flex-col gap-1">
+                        {column.label}
+                        <ColumnTypeBadge type={column.dataType} />
+                      </span>
+                      {isSortEnabled &&
+                        (isSorted ? (
+                          sort?.direction === 'asc' ? (
+                            <IconArrowUp size={14} />
+                          ) : (
+                            <IconArrowDown size={14} />
+                          )
                         ) : (
-                          <IconArrowDown size={14} />
-                        )
-                      ) : (
-                        <IconSelector size={14} className="text-base-content/30" />
-                      ))}
-                  </button>
+                          <IconSelector size={14} className="text-base-content/30" />
+                        ))}
+                    </button>
+                    {selectable && onColumnMove && (
+                      <span className="flex shrink-0 items-center gap-0.5">
+                        <button
+                          type="button"
+                          onClick={() => onColumnMove(column.id, 'left')}
+                          disabled={columnIndex === 0}
+                          className="text-base-content/40 hover:text-primary disabled:opacity-20"
+                          aria-label={`Déplacer ${column.label} vers la gauche`}
+                        >
+                          <IconChevronLeft size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onColumnMove(column.id, 'right')}
+                          disabled={columnIndex === columns.length - 1}
+                          className="text-base-content/40 hover:text-primary disabled:opacity-20"
+                          aria-label={`Déplacer ${column.label} vers la droite`}
+                        >
+                          <IconChevronRight size={13} />
+                        </button>
+                      </span>
+                    )}
+                  </div>
                 </th>
               )
             })}

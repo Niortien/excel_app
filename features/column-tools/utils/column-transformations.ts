@@ -12,11 +12,12 @@ export function addEmptyColumn(data: SheetData, label: string, dataType: ColumnD
   return { columns, rows }
 }
 
-/** Ajoute une colonne d'identifiant auto-incrémenté (numéro, lettre ou chiffres romains).
- * Type texte même pour un format numérique : un identifiant n'est pas fait pour être additionné.
- * Le nombre d'identifiants demandé (endAt - startAt + 1) pilote le résultat : si le tableau a
- * moins de lignes que d'identifiants demandés, les lignes manquantes sont ajoutées ; s'il en a
- * plus, les lignes en trop restent vides dans cette colonne. */
+/** Ajoute une colonne d'identifiant auto-incrémenté (numéro, lettre ou chiffres romains), en
+ * première position par défaut (un identifiant se lit en premier) — déplaçable ensuite comme
+ * n'importe quelle colonne. Type texte même pour un format numérique : un identifiant n'est pas
+ * fait pour être additionné. Le nombre d'identifiants demandé (endAt - startAt + 1) pilote le
+ * résultat : si le tableau a moins de lignes que d'identifiants demandés, les lignes manquantes
+ * sont ajoutées ; s'il en a plus, les lignes en trop restent vides dans cette colonne. */
 export function addIdColumn(data: SheetData, label: string, options: IdColumnOptions): SheetData {
   const usedIds = new Set(data.columns.map((c) => c.id))
   const id = slugifyColumnLabel(label, usedIds)
@@ -29,7 +30,7 @@ export function addIdColumn(data: SheetData, label: string, options: IdColumnOpt
     rows.push(Object.fromEntries(data.columns.map((c) => [c.id, ''])))
   }
 
-  const columns = [...data.columns, { id, label, dataType: 'text' as const, hasEmptyValues: count < rows.length }]
+  const columns = [{ id, label, dataType: 'text' as const, hasEmptyValues: count < rows.length }, ...data.columns]
   const rowsWithId = rows.map((row, index) => ({ ...row, [id]: index < count ? sequence[index] : '' }))
   return { columns, rows: rowsWithId }
 }

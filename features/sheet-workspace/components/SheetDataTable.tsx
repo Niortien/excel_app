@@ -7,11 +7,13 @@ import { useMemo } from 'react'
 import { SmartTable } from '@/components/SmartTable'
 import { useSheetSelection } from '@/hooks/use-sheet-selection'
 import { useCellEditing } from '../hooks/use-cell-editing'
+import { useSelectionActions } from '../hooks/use-selection-actions'
 import type { SheetColumn, SheetRow } from '@/types/sheet'
 
 export function SheetDataTable({ columns, rows }: { columns: SheetColumn[]; rows: SheetRow[] }) {
   const { selectedColumnIds, selectedRange, selectColumn, startCellSelection, extendCellSelection, selectRow } = useSheetSelection()
   const { commitCellEdit } = useCellEditing()
+  const { moveColumnById } = useSelectionActions()
   const columnOrder = useMemo(() => columns.map((c) => c.id), [columns])
 
   return (
@@ -27,6 +29,7 @@ export function SheetDataTable({ columns, rows }: { columns: SheetColumn[]; rows
       onCellSelectStart={(rowIndex, columnId, modifiers) => startCellSelection(rowIndex, columnId, modifiers)}
       onCellSelectExtend={(rowIndex, columnId) => extendCellSelection(rowIndex, columnId)}
       onRowHeaderSelect={(rowIndex, modifiers) => selectRow(rowIndex, modifiers, columnOrder)}
+      onColumnMove={(columnId, direction) => moveColumnById(columnId, direction)}
       editable
       onCellValueChange={commitCellEdit}
     />
