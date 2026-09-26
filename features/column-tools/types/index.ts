@@ -1,4 +1,4 @@
-export type ColumnToolActionType = 'add' | 'rename' | 'convert-type' | 'split' | 'merge'
+export type ColumnToolActionType = 'add' | 'id-column' | 'rename' | 'convert-type' | 'split' | 'merge'
 
 export interface ColumnToolActionDefinition {
   id: ColumnToolActionType
@@ -7,6 +7,7 @@ export interface ColumnToolActionDefinition {
 
 export const columnToolActions: ColumnToolActionDefinition[] = [
   { id: 'add', label: 'Ajouter une colonne' },
+  { id: 'id-column', label: "Colonne d'identifiant" },
   { id: 'rename', label: 'Renommer une colonne' },
   { id: 'convert-type', label: 'Changer le type' },
   { id: 'split', label: 'Scinder en deux colonnes' },

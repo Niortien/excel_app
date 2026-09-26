@@ -1,14 +1,16 @@
 'use client'
 
 // Formulaire dont les champs affichés dépendent de l'action choisie. Regroupé en un seul
-// composant car les cinq actions partagent la même mécanique simple de champs contrôlés.
+// composant car les six actions partagent la même mécanique simple de champs contrôlés.
 import { columnTypeOptions } from '@/lib/column-types'
 import type { ColumnDataType, SheetColumn } from '@/types/sheet'
 import type { ColumnToolActionType } from '../types'
+import { idColumnFormatLabels, type IdColumnFormat } from '../utils/id-sequence'
 
 interface ColumnToolFormProps {
   actionType: ColumnToolActionType
   columns: SheetColumn[]
+  rowCount: number
   form: {
     columnId: string
     newLabel: string
@@ -20,11 +22,79 @@ interface ColumnToolFormProps {
     mergeColumnIdB: string
     separator: string
     mergeLabel: string
+    idFormat: IdColumnFormat
+    idStartAt: string
+    idEndAt: string
+    idPrefix: string
+    idZeroPadded: boolean
   }
   onChange: (patch: Partial<ColumnToolFormProps['form']>) => void
 }
 
-export function ColumnToolForm({ actionType, columns, form, onChange }: ColumnToolFormProps) {
+export function ColumnToolForm({ actionType, columns, rowCount, form, onChange }: ColumnToolFormProps) {
+  if (actionType === 'id-column') {
+    const startAt = Number(form.idStartAt)
+    const endAt = Number(form.idEndAt)
+    const count = Number.isFinite(startAt) && Number.isFinite(endAt) ? Math.max(0, endAt - startAt + 1) : 0
+
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-wrap items-end gap-3">
+          <TextField label="Nom de la colonne" value={form.newLabel} onChange={(v) => onChange({ newLabel: v })} />
+          <label className="form-control">
+            <span className="label-text mb-1 text-xs">Format</span>
+            <select
+              className="select select-bordered select-sm"
+              value={form.idFormat}
+              onChange={(e) => onChange({ idFormat: e.target.value as IdColumnFormat })}
+            >
+              {Object.entries(idColumnFormatLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="form-control">
+            <span className="label-text mb-1 text-xs">Commence à</span>
+            <input
+              type="number"
+              className="input input-bordered input-sm w-20"
+              value={form.idStartAt}
+              onChange={(e) => onChange({ idStartAt: e.target.value })}
+            />
+          </label>
+          <label className="form-control">
+            <span className="label-text mb-1 text-xs">Finit à</span>
+            <input
+              type="number"
+              className="input input-bordered input-sm w-20"
+              value={form.idEndAt}
+              onChange={(e) => onChange({ idEndAt: e.target.value })}
+            />
+          </label>
+          <TextField label="Préfixe (optionnel)" value={form.idPrefix} onChange={(v) => onChange({ idPrefix: v })} className="w-28" />
+          {form.idFormat === 'number' && (
+            <label className="flex cursor-pointer items-center gap-2 pb-2.5">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-sm"
+                checked={form.idZeroPadded}
+                onChange={(e) => onChange({ idZeroPadded: e.target.checked })}
+              />
+              <span className="text-xs text-base-content">Compléter avec des zéros (001, 002...)</span>
+            </label>
+          )}
+        </div>
+        {count > 0 && (
+          <p className="text-xs text-base-content/60">
+            {count} identifiant{count > 1 ? 's' : ''} seront générés{count > rowCount ? ' (des lignes seront ajoutées)' : ''}.
+          </p>
+        )}
+      </div>
+    )
+  }
+
   if (actionType === 'add') {
     return (
       <div className="flex flex-wrap items-end gap-3">

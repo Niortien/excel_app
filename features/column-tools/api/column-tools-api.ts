@@ -1,10 +1,15 @@
-// TODO backend : à remplacer par POST /sheets/:id/columns/(add|rename|convert-type|split|merge).
+// TODO backend : à remplacer par POST /sheets/:id/columns/(add|id-column|rename|convert-type|split|merge).
 // Calcul local en attendant, même signatures async pour un remplacement direct.
 import type { ColumnDataType, SheetData } from '@/types/sheet'
-import { addEmptyColumn, convertColumnType, mergeColumns, renameColumn, splitColumn } from '../utils/column-transformations'
+import { addEmptyColumn, addIdColumn, convertColumnType, mergeColumns, renameColumn, splitColumn } from '../utils/column-transformations'
+import type { IdColumnOptions } from '../utils/id-sequence'
 
 export async function previewAddColumn(data: SheetData, label: string, dataType: ColumnDataType): Promise<SheetData> {
   return addEmptyColumn(data, label, dataType)
+}
+
+export async function previewAddIdColumn(data: SheetData, label: string, options: IdColumnOptions): Promise<SheetData> {
+  return addIdColumn(data, label, options)
 }
 
 export async function previewRenameColumn(data: SheetData, columnId: string, newLabel: string): Promise<SheetData> {

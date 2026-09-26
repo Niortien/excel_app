@@ -32,7 +32,7 @@ export function ColumnToolsPanel({ onClose }: { onClose: () => void }) {
         ))}
       </div>
 
-      <ColumnToolForm actionType={actionType} columns={data.columns} form={form} onChange={updateForm} />
+      <ColumnToolForm actionType={actionType} columns={data.columns} rowCount={data.rows.length} form={form} onChange={updateForm} />
 
       {preview && (
         <OperationPreviewPanel

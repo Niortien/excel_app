@@ -1,7 +1,8 @@
 // Fonctions pures de transformation de colonnes : ajouter, renommer, convertir, scinder,
 // fusionner, déplacer.
 import { slugifyColumnLabel } from '@/features/import-sheet/utils/slugify-column-label'
-import type { ColumnDataType, SheetData } from '@/types/sheet'
+import type { ColumnDataType, SheetData, SheetRow } from '@/types/sheet'
+import { generateIdSequence, type IdColumnOptions } from './id-sequence'
 
 export function addEmptyColumn(data: SheetData, label: string, dataType: ColumnDataType): SheetData {
   const usedIds = new Set(data.columns.map((c) => c.id))
@@ -9,6 +10,28 @@ export function addEmptyColumn(data: SheetData, label: string, dataType: ColumnD
   const columns = [...data.columns, { id, label, dataType, hasEmptyValues: true }]
   const rows = data.rows.map((row) => ({ ...row, [id]: '' }))
   return { columns, rows }
+}
+
+/** Ajoute une colonne d'identifiant auto-incrémenté (numéro, lettre ou chiffres romains).
+ * Type texte même pour un format numérique : un identifiant n'est pas fait pour être additionné.
+ * Le nombre d'identifiants demandé (endAt - startAt + 1) pilote le résultat : si le tableau a
+ * moins de lignes que d'identifiants demandés, les lignes manquantes sont ajoutées ; s'il en a
+ * plus, les lignes en trop restent vides dans cette colonne. */
+export function addIdColumn(data: SheetData, label: string, options: IdColumnOptions): SheetData {
+  const usedIds = new Set(data.columns.map((c) => c.id))
+  const id = slugifyColumnLabel(label, usedIds)
+  const sequence = generateIdSequence(options)
+  const count = sequence.length
+
+  const missingRowCount = Math.max(0, count - data.rows.length)
+  const rows: SheetRow[] = [...data.rows]
+  for (let i = 0; i < missingRowCount; i += 1) {
+    rows.push(Object.fromEntries(data.columns.map((c) => [c.id, ''])))
+  }
+
+  const columns = [...data.columns, { id, label, dataType: 'text' as const, hasEmptyValues: count < rows.length }]
+  const rowsWithId = rows.map((row, index) => ({ ...row, [id]: index < count ? sequence[index] : '' }))
+  return { columns, rows: rowsWithId }
 }
 
 export function moveColumn(data: SheetData, columnId: string, direction: 'left' | 'right'): SheetData {
